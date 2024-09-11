@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Status Overview</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .traffic-light {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 20px auto;
+            background-color: grey;
+        }
+
+        .green {
+            background-color: green;
+        }
+
+        .orange {
+            background-color: orange;
+        }
+
+        .red {
+            background-color: red;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .api-link {
+            font-size: 0.9em;
+            color: #007bff;
+            word-wrap: break-word;
+        }
+
+        .api-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">API Status Overview</h1>
+        <div id="api-container">
+            <!-- Dynamic content will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        // Array of API objects
+        const apis = [
+            { name: 'Gateway', id: 'access-light', url: 'http://localhost:4000/health' },
+            { name: 'Some API', id: 'zabun-light', url: 'http://localhost:3004/docs' },
+            { name: 'Other API', id: 'cms-light', url: 'http://localhost:3002/health' },
+            { name: 'Web app', id: 'cms-app-light', url: 'http://localhost:4200' },
+            { name: 'Web site', id: 'theme-light', url: 'http://localhost:3000/' },
+        ];
+
+        // Function to update the traffic light color based on the status
+        function updateTrafficLight(id, status) {
+            const light = document.getElementById(id);
+            if (status === 200) {
+                light.className = 'traffic-light green';
+            } else if (status === 400) {
+                light.className = 'traffic-light orange';
+            } else {
+                light.className = 'traffic-light red';
+            }
+        }
+
+        // Function to check API status and update the traffic light
+        async function checkApiStatus(api) {
+            try {
+                const response = await fetch(api.url, { mode: 'no-cors' });
+                updateTrafficLight(api.id, response.status || 200);  // Since status may not be available in no-cors mode
+            } catch (error) {
+                updateTrafficLight(api.id, 500);
+            }
+        }
+
+        // Function to dynamically render the API cards in rows of three
+        function renderAPICards() {
+            const container = document.getElementById('api-container');
+            let row;
+
+            apis.forEach((api, index) => {
+                if (index % 3 === 0) {
+                    // Create a new row every 3 cards
+                    row = document.createElement('div');
+                    row.className = 'row';
+                    container.appendChild(row);
+                }
+
+                // Create card element
+                const card = document.createElement('div');
+                card.className = 'col-md-4';
+                card.innerHTML = `
+                    <div class="card text-center p-4 mb-4">
+                        <h2>${api.name}</h2>
+                        <div id="${api.id}" class="traffic-light"></div>
+                        <a href="${api.url}" class="api-link" target="_blank">${api.url}</a>
+                    </div>
+                `;
+
+                // Append card to the current row
+                row.appendChild(card);
+
+                // Check API status
+                checkApiStatus(api);
+            });
+        }
+
+        // Render the API cards on page load
+        window.onload = renderAPICards;
+    </script>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
